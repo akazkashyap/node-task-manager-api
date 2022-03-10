@@ -1,8 +1,9 @@
 //DataBase Imports
 const User = require("../db/models/users")
 require("../db/mongoose")
-
+const bcryptjs = require("bcryptjs")
 const express = require("express")
+const async = require("hbs/lib/async")
 const router = new express.Router()
 
 //USER router
@@ -56,8 +57,7 @@ router.get("/user/:id", async(req, res)=>{
     //     res.send(user)
     // }).catch((e)=>{
     //     res.status(500).send(e)
-    // })
-    
+    // }) 
 })
 
 router.patch("/user/:id", async(req, res)=>{
@@ -68,7 +68,11 @@ router.patch("/user/:id", async(req, res)=>{
         return res.status(400).send()
     }
     try {
-        const user = await User.findByIdAndUpdate(req.params.id, req.body , {new: true, runValidators:true})
+        const user = await User.findById(req.params.id)
+        providedFields.forEach((field) => user[field] = req.body[field]);
+
+        user.save()
+        //const user = await User.findByIdAndUpdate(req.params.id, req.body , {new: true, runValidators:true})
         if(!user){
             return res.status(404).send()
         }
@@ -87,6 +91,14 @@ router.delete("/user/:id", async(req, res)=>{
         res.status(202).send(deleted)
     } catch (error) {
         res.status(500).send()
+    }
+})
+router.post("/user/login", async(req, res)=>{
+    try {
+        const user = await User.findByUserCredentials(req.body.email, req.body.password)
+        res.send(user)      
+    } catch (error) {
+        res.status(400).send({message:"Unable to login, please try again!!!"})
     }
 })
 

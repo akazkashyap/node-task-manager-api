@@ -1,10 +1,10 @@
 //File or modules imports
 const express = require("express")
-const async = require("hbs/lib/async")
 
 //ROUTERS
 const taskRoute = require("./routes/taskRouter")
 const userRouter = require("./routes/userRouter")
+const async = require("hbs/lib/async")
 
 const app = express()
 app.use(express.json())
