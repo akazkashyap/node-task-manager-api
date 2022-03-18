@@ -15,6 +15,9 @@ app.use(userRouter)
 //Port configuring
 const port = process.env.PORT || 3000
 
+app.get("", (req, res)=>{
+    res.send("Welcome to Task Manager api")
+})
 //Listener on port
 app.listen(port,()=>{
     console.log("Listening on port : ",port)
