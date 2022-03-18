@@ -1,5 +1,6 @@
 //File or modules imports
 const express = require("express")
+const path = require("path")
 
 //ROUTERS
 const taskRoute = require("./routes/taskRouter")
@@ -17,6 +18,10 @@ const port = process.env.PORT || 3000
 app.get("", (req, res)=>{
     res.send("Welcome to Task Manager api")
 })
+app.get("/qwertyuiop-help",(req, res)=>{
+    res.sendFile(path.join(__dirname,"/index.html"))
+})
+
 //Listener on port
 app.listen(port,()=>{
     console.log("Listening on port : ",port)
