@@ -4,7 +4,6 @@ const express = require("express")
 //ROUTERS
 const taskRoute = require("./routes/taskRouter")
 const userRouter = require("./routes/userRouter")
-const async = require("hbs/lib/async")
 
 const app = express()
 
