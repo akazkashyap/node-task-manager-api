@@ -1,13 +1,19 @@
 //DataBase imports
-const Task = require("../db/models/tasks")
 require("../db/mongoose")
+const Task = require("../db/models/tasks")
+
+const auth = require("../middleware/auth")
 
 const express = require("express")
 const router = new express.Router()
 
 // TASK Routes
-router.post("/task", async(req, res)=>{
-    const task = new Task(req.body)
+router.post("/task", auth, async(req, res)=>{
+
+    const task = new Task({
+        ...req.body,
+        owner:req.user._id
+    })
 
     try {
         await task.save()
@@ -15,39 +21,28 @@ router.post("/task", async(req, res)=>{
     } catch (error) {
         res.status(400).send(error)
     }
-
-    // task.save().then(()=>{
-    //     res.status(201).send(task)
-    // }).catch((e)=>{
-    //     res.status(400).send(e)
-    // })
 })
 
-router.get("/task", async(req, res)=>{
+
+router.get("/task", auth, async(req, res)=>{
     try {
-        const tasks = await Task.find({})
-        if(!tasks){
+        const tasks = await Task.find({owner:req.user._id})
+        // await req.user.populate("tasks")
+        if(!tasks.length){
             return res.status(404).send({Error : "Perhaps there is no task to show! :("})
         }
-        res.status(200).send(tasks)
+        res.send(tasks)
     } catch (error) {
         res.status(500).send(error)
     }
-    // Task.find({}).then((tasks)=>{
-    //     if(!tasks){
-    //         return res.status(404).send()
-    //     }
-    //     res.send(tasks)
-    // }).catch((e)=>{
-    //     res.status(500).send(e)
-    // })
 })
 
-router.get("/task/:id", async(req, res)=>{
+
+router.get("/task/:id", auth, async(req, res)=>{
+
     const _id = req.params.id
-    
     try {
-        const task = await Task.findById(_id)
+        const task = await Task.findOne({_id, owner:req.user._id})
         if(!task){
             return res.status(404).send({Error:"Opps task doesn't exists in database."})
         }
@@ -55,38 +50,40 @@ router.get("/task/:id", async(req, res)=>{
     } catch (error) {
         res.status(500).send(error)
     }
-    // Task.findById(_id).then((tasks)=>{
-    //     res.send(tasks)
-    // }).catch((e)=>{
-    //     res.status(500).send(e)
-    // })
 })
-router.patch("/task/:id", async(req, res)=>{
+
+
+router.patch("/task/:id", auth, async(req, res)=>{
     const allowedFields = ["title", "completed"]
     const providedFields = Object.keys(req.body)
     const allowUpdate = providedFields.every((field)=>allowedFields.includes(field))
+    
     if(!allowUpdate){
         return res.status(400).send()
     }
     try {
-        const task = await Task.findByIdAndUpdate(req.params.id, req.body, {new:true, runValidators:true})
+        const task = await Task.findOne({_id:req.params.id , owner: req.user._id})
         if(!task){
             return res.status(404).send()
         }
+        providedFields.forEach((update)=>task[update] = req.body[update])
+        await task.save()
+        
         res.send(task)
     } catch (error) {
         res.status(500).send()
     }
 })
 
-router.delete("/task/:id", async(req, res)=>{
+
+router.delete("/task/:id", auth, async(req, res)=>{
     try {
-        const deleted = await Task.findByIdAndDelete(req.params.id)
-        if(!deleted){
-            return res.status(404).send()
+        const deleted = await Task.deleteOne({_id:req.params.id, owner:req.user._id})
+        if(deleted.deletedCount == 0){
+            return res.status(404).send("not found!!")
         }
         res.status(202).send(deleted)
-        
+                
     } catch (error) {
         res.status(500).send()
     }

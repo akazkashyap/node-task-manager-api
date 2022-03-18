@@ -7,6 +7,7 @@ const userRouter = require("./routes/userRouter")
 const async = require("hbs/lib/async")
 
 const app = express()
+
 app.use(express.json())
 app.use(taskRoute)
 app.use(userRouter)
@@ -18,3 +19,19 @@ const port = process.env.PORT || 3000
 app.listen(port,()=>{
     console.log("Listening on port : ",port)
 })
+
+
+// const Task = require("./db/models/tasks")
+// const User = require("./db/models/users")
+
+// const main = async()=>{
+//     // const task = await Task.findById("6232d18de0ee2904cdf5ecd7")
+
+//     // await task.populate('owner')
+//     // console.log(task.owner)
+
+//     const user = await User.findById("6232d0ec344cbcbf51212175")
+//     await user.populate("tasks")
+//     console.log(user.tasks)
+// }
+// main()
